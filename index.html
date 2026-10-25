@@ -96,6 +96,12 @@
   .band.b .tr i { color: var(--mag); }
   @keyframes mq { to { transform: translateX(-50%); } }
 
+  /* QA 25/10: in Arabic the bands ran right-to-left and the second one slid out of view, and ".72 H" read "H 72.":
+     the bands always move left to right (each word keeps its own direction), and the chip figure stays left to right */
+  .rib { direction: ltr; }
+  .tr span, .chip b { unicode-bidi: isolate; }
+  .chip b { direction: ltr; }
+
   [hidden] { display: none !important; }
   [dir="rtl"] body { font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif; }
   [dir="rtl"] .l1 { font-family: "Noto Naskh Arabic", serif; font-weight: 700; font-size: clamp(34px, 5.4vw, 52px); line-height: 1.25; }
