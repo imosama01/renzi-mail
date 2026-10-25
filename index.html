@@ -6,96 +6,145 @@
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
 <title>Renzi</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%231D2433%27/%3E%3Ctext x=%2732%27 y=%2746%27 text-anchor=%27middle%27 font-family=%27Georgia,serif%27 font-weight=%27700%27 font-size=%2740%27 fill=%27%23F4EEE4%27%3ER%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,500&family=Geist+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=EB+Garamond:ital,wght@1,400;1,500&family=Geist+Mono:wght@500;600&family=IBM+Plex+Sans:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@500;600&family=Noto+Naskh+Arabic:wght@700&display=swap">
 <!-- Renzi mail relay (25/10/2026). The Renzi page links here with the trial request after the "#"
-     (never in the query string). While Longbow's intro plays (db-longbow.webflow.io: lines draw in,
-     corner squares pop, the logo fades in, a ".LOADING" pill fills up and follows the mouse), the request
-     goes to the Renzi Gmail script with a plain POST (no Google cookies, so no Google error page for people
-     signed in to several accounts). Then the visitor lands straight in their own mailbox.
-     ?demo=1 plays everything without sending (and without leaving the page). -->
+     (never in the query string). The page looks like a page of the Renzi site (Midnight set: Magnolia
+     ground, the dark framed panel of the hero, Bebas + Garamond italic headline, the ".01" mono chip, the two
+     moving word bands) and plays a Renzi take on Longbow's intro: four lines draw in around the headline,
+     the corner squares pop, the ".ENVOI" chip fills up while the request goes to the Renzi Gmail script
+     with a plain POST (no Google page). Then the visitor lands in their own mailbox.
+     ?demo=1 plays everything without sending (and without leaving the page); &l=en|ar for the other languages. -->
 <style>
-  :root { --top: #1D2433; --bottom: #7D8694; --line: rgb(255 255 255 / .28); --sq: 172px; --mono: "Geist Mono", ui-monospace, Consolas, monospace; }
+  :root {
+    --ink: #1D2433; --wine: #9A0A2C; --mag: #F4EEE4; --white: #FFFFFF;
+    --big: "Bebas Neue", Impact, "Arial Narrow", sans-serif; --it: "EB Garamond", Georgia, serif;
+    --mono: "Geist Mono", ui-monospace, Consolas, monospace; --ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --bw: min(78%, 400px); --bh: 168px; --ease: cubic-bezier(.2, .7, .2, 1);
+  }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
-  body { overflow: hidden; background: linear-gradient(180deg, var(--top) 0%, #3B4557 45%, var(--bottom) 100%); color: #FFFFFF; font: 500 14px/1.4 var(--mono); cursor: none; }
-  body.is-done { cursor: auto; }
-  /* a faint grain, like Longbow */
-  body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .09; mix-blend-mode: overlay;
+  body { min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; background: var(--mag); color: var(--ink); font: 500 15px/1.5 var(--ui); overflow: hidden; }
+  /* the faint grain of the Renzi site */
+  body::before { content: ""; position: fixed; inset: 0; z-index: 9; pointer-events: none; opacity: .05;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .pre { position: fixed; inset: 0; opacity: 0; animation: fade .3s ease-in-out forwards; transition: opacity .3s ease-in-out; }
-  .pre.is-out { opacity: 0 !important; }
-  @keyframes fade { to { opacity: 1; } }
 
-  /* the four lines around the centre square, drawn one after the other */
-  .ln { position: absolute; background: var(--line); }
+  /* header: the Renzi logo and the ".72 H" chip, as on the site */
+  .hd { display: flex; align-items: center; justify-content: space-between; padding: 18px clamp(16px, 4vw, 40px); }
+  .logo { color: var(--ink); font: 600 22px/1 var(--ui); letter-spacing: -.02em; text-decoration: none; }
+  .logo span { color: var(--wine); }
+  .chip { margin: 0; display: inline-flex; align-items: center; gap: 10px; font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .02em; color: rgb(29 36 51 / .7); }
+  .chip b { padding: 5px 10px; border-radius: 10px; background: var(--ink); color: var(--white); font-weight: 600; }
+
+  /* the dark framed panel of the hero, rising in */
+  .stage { display: grid; place-items: center; padding: 0 clamp(12px, 4vw, 40px); min-height: 0; }
+  .frame { position: relative; width: min(100%, 980px); height: min(62svh, 520px); min-height: 380px; border-radius: 30px; background: var(--ink); color: var(--white); overflow: hidden;
+    opacity: 0; transform: translateY(18px) scale(.985); animation: rise .7s var(--ease) .05s forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* Longbow's lines, drawn one after the other around the headline box */
+  .ln { position: absolute; background: rgb(244 238 228 / .22); }
   .h { left: 0; right: 0; height: 1px; transform: scaleX(0); }
   .v { top: 0; bottom: 0; width: 1px; transform: scaleY(0); }
-  .h1 { top: calc(50% - var(--sq) / 2); transform-origin: left center; animation: sx .5s ease-in-out .3s forwards; }
-  .v1 { left: calc(50% - var(--sq) / 2); transform-origin: center bottom; animation: sy .5s ease-in-out .7s forwards; }
-  .v2 { left: calc(50% + var(--sq) / 2); transform-origin: center top; animation: sy .5s ease-in-out 1.1s forwards; }
-  .h2 { top: calc(50% + var(--sq) / 2); transform-origin: right center; animation: sx .5s ease-in-out 1.6s forwards; }
+  .h1 { top: calc(50% - var(--bh) / 2 - 18px); transform-origin: left center; animation: sx .55s ease-in-out .45s forwards; }
+  .v1 { left: calc(50% - var(--bw) / 2); transform-origin: center bottom; animation: sy .55s ease-in-out .85s forwards; }
+  .v2 { left: calc(50% + var(--bw) / 2); transform-origin: center top; animation: sy .55s ease-in-out 1.25s forwards; }
+  .h2 { top: calc(50% + var(--bh) / 2 - 18px); transform-origin: right center; animation: sx .55s ease-in-out 1.65s forwards; }
   @keyframes sx { to { transform: scaleX(1); } }
   @keyframes sy { to { transform: scaleY(1); } }
-
-  /* small white squares that pop at the corners, turning from 45° */
-  .sq { position: absolute; width: 7px; height: 7px; margin: -3px 0 0 -3px; background: #FFFFFF; opacity: 0; transform: scale(0) rotate(45deg); animation: pop .4s cubic-bezier(.34, 1.56, .64, 1) forwards; }
-  .s1 { top: calc(50% - var(--sq) / 2); left: calc(50% - var(--sq) / 2); animation-delay: 1s; }
-  .s2 { top: calc(50% - var(--sq) / 2); left: calc(50% + var(--sq) / 2); animation-delay: 1.3s; }
-  .s3 { top: calc(50% + var(--sq) / 2); left: calc(50% + var(--sq) / 2); animation-delay: 1.85s; }
-  .s4 { top: calc(50% + var(--sq) / 2); left: calc(50% - var(--sq) / 2); animation-delay: 1.95s; }
+  .sq { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: var(--mag); opacity: 0; transform: scale(0) rotate(45deg); animation: pop .4s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+  .sq.w { background: #FF385C; }
+  .s1 { top: calc(50% - var(--bh) / 2 - 18px); left: calc(50% - var(--bw) / 2); animation-delay: 1.15s; }
+  .s2 { top: calc(50% - var(--bh) / 2 - 18px); left: calc(50% + var(--bw) / 2); animation-delay: 1.45s; }
+  .s3 { top: calc(50% + var(--bh) / 2 - 18px); left: calc(50% + var(--bw) / 2); animation-delay: 1.95s; }
+  .s4 { top: calc(50% + var(--bh) / 2 - 18px); left: calc(50% - var(--bw) / 2); animation-delay: 2.05s; }
   @keyframes pop { to { opacity: 1; transform: none; } }
 
-  /* the Renzi mark in the centre, fading in slowly */
-  .mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; font: italic 500 46px/1 "EB Garamond", Georgia, serif; letter-spacing: -.02em; opacity: 0; animation: fade 1.3s ease-in-out 1.2s forwards; white-space: nowrap; }
-  .mark span { font-style: normal; font-size: 1.25em; }
+  /* inside the box: the site's chapter chip, the two-line headline */
+  .core { position: absolute; left: 50%; top: calc(50% - 18px); transform: translate(-50%, -50%); width: var(--bw); display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .k { margin: 0; display: inline-flex; align-items: center; gap: 10px; font: 600 11.5px/1 var(--mono); letter-spacing: .02em; text-transform: uppercase; color: rgb(244 238 228 / .72); opacity: 0; animation: up .6s var(--ease) .7s forwards; }
+  .k b { padding: 4px 9px; border-radius: 9px; background: var(--mag); color: var(--ink); }
+  .ttl { margin: 0; display: grid; font-weight: 400; }
+  .l1 { font: 400 clamp(46px, 7.4vw, 76px)/.86 var(--big); letter-spacing: -.005em; text-transform: uppercase; opacity: 0; animation: up .7s var(--ease) .9s forwards; }
+  .l2 { font: italic 500 clamp(24px, 3.4vw, 34px)/1 var(--it); letter-spacing: -.03em; color: var(--mag); opacity: 0; animation: up .7s var(--ease) 1.05s forwards; }
+  @keyframes up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-  /* the ".LOADING" pill: a white fill grows over a frosted track; it follows the mouse */
-  .tag { position: fixed; left: 0; top: 0; z-index: 3; display: inline-flex; border-radius: 9px; overflow: hidden; background: rgb(255 255 255 / .22); pointer-events: none; opacity: 0; transition: opacity .3s; will-change: transform; }
-  .tag.is-on { opacity: 1; }
-  .tag .t { position: relative; display: block; padding: 6px 10px; color: rgb(255 255 255 / .82); font: 600 14px/1 var(--mono); letter-spacing: -.03em; text-transform: uppercase; white-space: nowrap; }
-  .tag .fill { position: absolute; inset: 0 auto 0 0; width: 0; overflow: hidden; background: #FFFFFF; transition: width .2s ease-out; }
-  .tag .fill .t { color: var(--top); }
-  /* no mouse (phones): the pill sits under the square */
-  @media (hover: none) { .tag { left: 50%; top: calc(50% + var(--sq) / 2 + 34px); transform: translateX(-50%) !important; } }
+  /* under the box: the mono chip that fills up while sending */
+  .pill { position: absolute; left: 50%; top: calc(50% + var(--bh) / 2 + 22px); display: inline-flex; border-radius: 10px; overflow: hidden; background: rgb(244 238 228 / .16); opacity: 0; transform: translateX(-50%); animation: pin .5s var(--ease) 1.3s forwards; transition: opacity .3s; }
+  @keyframes pin { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translateX(-50%); } }
+  .pill.is-out { opacity: 0 !important; }
+  .pill .t { position: relative; display: block; padding: 7px 12px; font: 600 13px/1 var(--mono); letter-spacing: -.02em; text-transform: uppercase; color: rgb(244 238 228 / .8); white-space: nowrap; }
+  .pill .fill { position: absolute; inset: 0 auto 0 0; width: 0; overflow: hidden; background: var(--mag); transition: width .2s ease-out; }
+  .pill .fill .t { color: var(--ink); }
 
-  /* the end: one short line and, when needed, two buttons */
-  .end { position: fixed; left: 50%; top: calc(50% + var(--sq) / 2 + 30px); transform: translateX(-50%); width: min(92vw, 460px); display: grid; justify-items: center; gap: 14px; text-align: center; opacity: 0; transition: opacity .4s ease-in-out; }
-  .end.is-on { opacity: 1; }
-  .end p { margin: 0; font: 600 13px/1.5 var(--mono); letter-spacing: -.02em; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 1px 8px rgb(29 36 51 / .45); }
-  .end b { text-transform: none; }
-  .acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .acts a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 10px; font: 600 13px/1 var(--mono); text-transform: uppercase; letter-spacing: -.02em; text-decoration: none; color: var(--top); background: #FFFFFF; }
-  .acts a.ghost { color: #FFFFFF; background: rgb(255 255 255 / .16); }
+  .acts { position: absolute; left: 50%; top: calc(50% + var(--bh) / 2 + 14px); transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: max-content; max-width: 92%; opacity: 0; transition: opacity .4s; }
+  .acts.is-on { opacity: 1; }
+  .acts a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 999px; font: 600 15px/1 var(--ui); text-decoration: none; color: var(--white); background: var(--wine); }
+  .acts a.ghost { background: transparent; color: var(--mag); box-shadow: inset 0 0 0 1px rgb(244 238 228 / .35); }
+
+  /* the two word bands of the home page, moving in opposite directions */
+  .rib { display: grid; overflow: hidden; padding-top: 18px; }
+  .band { overflow: hidden; white-space: nowrap; }
+  .band.a { background: var(--ink); color: var(--white); }
+  .band.b { background: var(--wine); color: var(--white); }
+  .tr { display: inline-flex; gap: 22px; padding: 9px 0; width: max-content; animation: mq 32s linear infinite; }
+  .band.b .tr { animation-direction: reverse; animation-duration: 38s; }
+  .tr span { font: 400 clamp(26px, 3.6vw, 40px)/1 var(--big); letter-spacing: .01em; text-transform: uppercase; }
+  .tr i { font-style: normal; align-self: center; font-size: 14px; color: #FF385C; }
+  .band.b .tr i { color: var(--mag); }
+  @keyframes mq { to { transform: translateX(-50%); } }
+
   [hidden] { display: none !important; }
-  [dir="rtl"] .end p, [dir="rtl"] .acts a, [dir="rtl"] .tag .t { font-family: Tahoma, "Segoe UI", Arial, sans-serif; text-transform: none; letter-spacing: 0; }
-  @media (max-width: 520px) { :root { --sq: 128px; } .mark { font-size: 36px; } }
+  [dir="rtl"] body { font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif; }
+  [dir="rtl"] .l1 { font-family: "Noto Naskh Arabic", serif; font-weight: 700; font-size: clamp(34px, 5.4vw, 52px); line-height: 1.25; }
+  [dir="rtl"] .l2 { font-family: "IBM Plex Sans Arabic", sans-serif; font-style: normal; font-size: clamp(18px, 2.6vw, 24px); }
+  [dir="rtl"] .k, [dir="rtl"] .pill .t, [dir="rtl"] .chip, [dir="rtl"] .tr span { font-family: "IBM Plex Sans Arabic", sans-serif; letter-spacing: 0; }
+  @media (max-width: 560px) {
+    :root { --bw: 86%; --bh: 150px; }
+    .frame { height: min(64svh, 520px); border-radius: 24px; }
+    .chip > span { display: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .pre, .ln, .sq, .mark { animation: none !important; opacity: 1; transform: none; }
-    .tag .fill { transition: none; }
+    .frame, .ln, .sq, .k, .l1, .l2 { animation: none !important; opacity: 1; transform: none; }
+    .pill { animation: none !important; opacity: 1; }
+    .tr { animation: none; }
   }
 </style>
 </head>
 <body>
-<div class="pre" id="pre" aria-hidden="true">
-  <i class="ln h h1"></i><i class="ln v v1"></i><i class="ln v v2"></i><i class="ln h h2"></i>
-  <i class="sq s1"></i><i class="sq s2"></i><i class="sq s3"></i><i class="sq s4"></i>
-  <p class="mark"><span>R</span>enzi</p>
-</div>
-<div class="tag" id="tag" aria-hidden="true"><span class="t" id="tt"></span><span class="fill" id="fill"><span class="t" id="tf"></span></span></div>
-<main class="end" id="end" aria-live="polite">
-  <p id="msg" role="status"></p>
-  <div class="acts" id="acts" hidden><a id="box" href="#"></a><a class="ghost" id="back" href="https://claude.ai/artifact/9jv6PFcam98p1AH8DCRpFG"></a></div>
+<header class="hd">
+  <a class="logo" href="https://claude.ai/artifact/9jv6PFcam98p1AH8DCRpFG"><span>R</span>enzi</a>
+  <p class="chip"><span id="chipT"></span><b>.72 H</b></p>
+</header>
+<main class="stage">
+  <section class="frame" aria-live="polite">
+    <i class="ln h h1"></i><i class="ln v v1"></i><i class="ln v v2"></i><i class="ln h h2"></i>
+    <i class="sq s1"></i><i class="sq s2 w"></i><i class="sq s3"></i><i class="sq s4 w"></i>
+    <div class="core">
+      <p class="k"><b>.01</b><span id="k"></span></p>
+      <h1 class="ttl"><span class="l1" id="l1"></span><span class="l2" id="l2"></span></h1>
+    </div>
+    <div class="pill" id="pill" aria-hidden="true"><span class="t" id="pt"></span><span class="fill" id="fill"><span class="t" id="pf"></span></span></div>
+    <div class="acts" id="acts" hidden><a id="box" href="#"></a><a class="ghost" id="back" href="https://claude.ai/artifact/9jv6PFcam98p1AH8DCRpFG"></a></div>
+  </section>
 </main>
+<div class="rib" aria-hidden="true">
+  <div class="band a"><div class="tr" id="ra"></div></div>
+  <div class="band b"><div class="tr" id="rb"></div></div>
+</div>
 <script>
   // the Renzi Gmail script (Web app, runs as renzi.contact.1@gmail.com)
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyLb8HWy2GeTNZnVhQ7R97muDbwjFpsqk9dawYl3FW0LV1aNEufO4l-PYRuO7bFI0KC3Q/exec';
-  var MIN_SHOW = 3000; // Longbow keeps its intro on screen for at least 3 s
+  var MIN_SHOW = 3200; // let the intro play before leaving
   var T = {
-    fr: { tag: '.Envoi', ok: 'C’est envoyé à {x} · ouverture de votre boîte mail', okN: 'C’est envoyé à {x} · ouvrez votre boîte de réception', already: 'Déjà envoyé à {x}', err: 'L’envoi n’a pas abouti · réessayez dans quelques minutes', none: 'Lien incomplet · revenez sur la page Renzi', open: 'Ouvrir {x}', back: 'Revenir à Renzi' },
-    en: { tag: '.Sending', ok: 'Sent to {x} · opening your mailbox', okN: 'Sent to {x} · open your inbox', already: 'Already sent to {x}', err: 'Sending failed · try again in a few minutes', none: 'Incomplete link · go back to the Renzi page', open: 'Open {x}', back: 'Back to Renzi' },
-    ar: { tag: 'جارٍ الإرسال', ok: 'أُرسل إلى {x} · نفتح بريدك الآن', okN: 'أُرسل إلى {x} · افتح بريدك الوارد', already: 'أُرسل من قبل إلى {x}', err: 'تعذّر الإرسال · أعد المحاولة بعد بضع دقائق', none: 'رابط غير مكتمل · عد إلى صفحة Renzi', open: 'افتح {x}', back: 'العودة إلى Renzi' }
+    fr: { chip: 'Essai gratuit', k: 'Votre essai', l1: 'Votre accès', l2: 'arrive par e-mail.', tag: '.Envoi', okA: 'C’est envoyé', okB: 'ouverture de {x}…', okN: 'ouvrez votre boîte mail.', alA: 'Déjà envoyé', alB: 'regardez votre boîte mail.', erA: 'Envoi échoué', erB: 'réessayez dans quelques minutes.', noA: 'Lien incomplet', noB: 'revenez sur la page Renzi.', open: 'Ouvrir {x}', back: 'Revenir à Renzi',
+      ra: ['Demande', 'Rendez-vous', 'Visite', 'Offre', 'Signature', 'Clés'], rb: ['Agent', 'Agence', 'Courtier', 'Casablanca', 'Rabat', 'Marrakech'] },
+    en: { chip: 'Free trial', k: 'Your trial', l1: 'Your access', l2: 'is on its way by e-mail.', tag: '.Sending', okA: 'Sent', okB: 'opening {x}…', okN: 'open your inbox.', alA: 'Already sent', alB: 'check your inbox.', erA: 'Sending failed', erB: 'try again in a few minutes.', noA: 'Incomplete link', noB: 'go back to the Renzi page.', open: 'Open {x}', back: 'Back to Renzi',
+      ra: ['Enquiries', 'Viewings', 'Offers', 'Signatures', 'Keys'], rb: ['Agent', 'Agency', 'Broker', 'Casablanca', 'Rabat', 'Marrakech'] },
+    ar: { chip: 'تجربة مجانية', k: 'تجربتك', l1: 'دخولك', l2: 'يصل عبر البريد.', tag: 'جارٍ الإرسال', okA: 'تم الإرسال', okB: 'نفتح {x}…', okN: 'افتح بريدك الوارد.', alA: 'أُرسل من قبل', alB: 'تحقق من بريدك.', erA: 'تعذّر الإرسال', erB: 'أعد المحاولة بعد بضع دقائق.', noA: 'رابط غير مكتمل', noB: 'عد إلى صفحة Renzi.', open: 'افتح {x}', back: 'العودة إلى Renzi',
+      ra: ['طلب', 'موعد', 'زيارة', 'عرض', 'توقيع', 'مفاتيح'], rb: ['وكيل', 'وكالة', 'وسيط', 'الدار البيضاء', 'الرباط', 'مراكش'] }
   };
   var $ = function (id) { return document.getElementById(id); };
   var rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -113,61 +162,72 @@
   var demo = /[?&]demo=1/.test(location.search);
   var d = null;
   try { d = decode(location.hash.replace(/^#/, '')); } catch (e) { d = null; }
-  if (!d && demo) d = { n: 'Demo', e: 'demo@gmail.com', l: 'fr' };
+  if (!d && demo) d = { n: 'Demo', e: 'demo@gmail.com', l: (location.search.match(/[?&]l=(fr|en|ar)/) || [])[1] || 'fr' };
   var lang = d && ['fr', 'en', 'ar'].indexOf(d.l) >= 0 ? d.l : 'fr', w = T[lang];
   document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   // the request leaves the address bar at once (it holds the visitor's name and e-mail)
-  try { history.replaceState(null, '', location.pathname + (demo ? '?demo=1' : '')); } catch (e) {}
-  $('tt').textContent = $('tf').textContent = w.tag;
-  $('back').textContent = w.back;
+  try { history.replaceState(null, '', location.pathname + (demo ? location.search : '')); } catch (e) {}
+  $('chipT').textContent = w.chip; $('k').textContent = w.k; $('l1').textContent = w.l1; $('l2').textContent = w.l2;
+  $('pt').textContent = $('pf').textContent = w.tag; $('back').textContent = w.back;
+  var band = function (words) { var one = words.map(function (x) { return '<span>' + x + '</span><i>✦</i>'; }).join(''); return one + one + one + one; };
+  $('ra').innerHTML = band(w.ra); $('rb').innerHTML = band(w.rb);
 
-  /* the pill follows the mouse with a soft lag (Longbow: 0.9 s, power2.out) */
-  var tag = $('tag'), tx = innerWidth * .25, ty = innerHeight * .2, cx = tx, cy = ty, raf = 0;
-  function follow() { cx += (tx - cx) * .12; cy += (ty - cy) * .12; tag.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px)'; raf = Math.abs(tx - cx) + Math.abs(ty - cy) > .4 ? requestAnimationFrame(follow) : 0; }
-  addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') return; tx = e.clientX + 14; ty = e.clientY + 14; if (!raf) raf = requestAnimationFrame(follow); });
-  follow();
-  setTimeout(function () { tag.classList.add('is-on'); }, 300);
+  /* the headline settles from 0 and 1 when it changes, as on the Renzi site */
+  function scramble(el, text) {
+    if (rm || lang === 'ar') { el.textContent = text; return; }
+    var tgt = text.split(''), cur = tgt.map(function (c) { return /\S/.test(c) ? (Math.random() < .5 ? '0' : '1') : c; }), del = tgt.map(function () { return Math.random() * 420; }), s0 = null, last = 0;
+    function step(now) {
+      if (s0 === null) s0 = now;
+      var all = true, flip = now - last > 60;
+      for (var i = 0; i < tgt.length; i++) {
+        if (!/\S/.test(tgt[i])) continue;
+        if (now >= s0 + del[i] + 380) cur[i] = tgt[i];
+        else { all = false; if (flip) cur[i] = Math.random() < .5 ? '0' : '1'; }
+      }
+      if (flip) last = now;
+      el.textContent = cur.join('');
+      if (!all) requestAnimationFrame(step); else el.textContent = text;
+    }
+    requestAnimationFrame(step);
+  }
+  function swap(el, text) { el.style.transition = 'opacity .25s'; el.style.opacity = '0'; setTimeout(function () { el.textContent = text; el.style.opacity = '1'; }, rm ? 0 : 250); }
 
   /* progress: random steps like Longbow, held under 90 % until the answer comes back */
   var pct = 0, answered = false;
   function setPct(p) { pct = Math.max(pct, Math.min(100, p)); $('fill').style.width = pct + '%'; }
-  var tick = setInterval(function () { setPct(pct + Math.random() * 15 * (answered ? 3 : 1)); if (!answered && pct > 88) pct = 88; }, 200);
+  var tick = setInterval(function () { setPct(pct + Math.random() * 14 * (answered ? 3 : 1)); if (!answered && pct > 88) pct = 88; }, 220);
 
-  function say(key, email) {
-    var parts = w[key].split('{x}'), m = $('msg');
-    m.textContent = parts[0];
-    if (parts.length > 1) { var b = document.createElement('b'); b.textContent = email; m.appendChild(b); m.appendChild(document.createTextNode(parts[1])); }
-  }
-  function finish(key, email, box, go) {
+  var t0 = performance.now();
+  function finish(a, b, box, go) {
     answered = true;
     var wait = Math.max(0, MIN_SHOW - (performance.now() - t0));
     setTimeout(function () {
       clearInterval(tick); setPct(100);
       setTimeout(function () {
-        tag.classList.remove('is-on');
-        document.body.classList.add('is-done');
-        setTimeout(function () {   // the pill leaves first, then the line comes in
-          say(key, email);
-          $('end').classList.add('is-on');
-          if (go && box && !demo) { setTimeout(function () { $('pre').classList.add('is-out'); location.replace(box.url); }, 1200); return; }
-          $('acts').hidden = false;
+        $('pill').classList.add('is-out');
+        // the headline stops animating in, then settles on the new words
+        $('l1').style.animation = 'none'; $('l1').style.opacity = '1'; $('l2').style.animation = 'none'; $('l2').style.opacity = '1';
+        scramble($('l1'), w[a]);
+        swap($('l2'), b);
+        if (go && box && !demo) { setTimeout(function () { location.replace(box.url); }, 1500); return; }
+        setTimeout(function () {
+          $('acts').hidden = false; requestAnimationFrame(function () { $('acts').classList.add('is-on'); });
           if (box) { $('box').href = demo ? '#' : box.url; $('box').textContent = w.open.replace('{x}', box.name); } else { $('box').hidden = true; }
-        }, rm ? 0 : 320);
-      }, 250);
+        }, rm ? 0 : 450);
+      }, 300);
     }, wait);
   }
 
-  var t0 = performance.now();
-  if (!d || !d.e) finish('none', '');
+  if (!d || !d.e) finish('noA', w.noB);
   else {
     var box = inbox(d.e);
     var send = demo ? new Promise(function (res) { setTimeout(function () { res({ ok: true }); }, 900); })
       : fetch(ENDPOINT, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ n: d.n, e: d.e, p: d.p, r: d.r, l: lang, x: d.x }) }).then(function (r) { return r.json(); });
     send.then(function (r) {
       if (!r || !r.ok) throw new Error('send');
-      if (r.already) finish('already', d.e, box, true);
-      else finish(box ? 'ok' : 'okN', d.e, box, true);
-    }).catch(function () { finish('err', ''); });
+      if (r.already) finish('alA', w.alB, box, true);
+      else finish('okA', box ? w.okB.replace('{x}', box.name) : w.okN, box, true);
+    }).catch(function () { finish('erA', w.erB); });
   }
 </script>
 </body>
