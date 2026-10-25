@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Renzi</title>
+<!-- Renzi mail relay (25/10/2026). The Renzi page links here with the trial request after the "#"
+     (never in the query string). This page sends it to the Renzi Gmail script with a plain POST
+     (no Google cookies, so no "Impossible d'ouvrir le fichier" page for people signed in to several
+     Google accounts), then takes the visitor straight to their own mailbox. -->
+<style>
+  :root { --ink: #1D2433; --page: #F4EEE4; --wine: #9A0A2C; --text-2: #454B59; --line: #E6DED0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--page); color: var(--ink); font: 400 16px/1.55 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+  body.ar { font-family: Tahoma, "Segoe UI", Arial, sans-serif; }
+  .card { width: min(100%, 440px); padding: 30px 26px; border: 1px solid var(--line); border-radius: 22px; background: #FFFFFF; display: grid; gap: 14px; }
+  .logo { margin: 0; font: 700 26px/1 Georgia, "Times New Roman", serif; }
+  .logo span { color: var(--wine); }
+  h1 { margin: 0; font: 700 24px/1.25 Georgia, "Times New Roman", serif; }
+  body.ar h1 { font-family: inherit; }
+  p { margin: 0; color: var(--text-2); }
+  b { color: var(--ink); overflow-wrap: anywhere; }
+  .bar { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; width: 40%; height: 100%; background: var(--wine); animation: go 1.1s ease-in-out infinite; }
+  @keyframes go { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+  a.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 999px; background: var(--wine); color: #FFFFFF; font-weight: 600; text-decoration: none; }
+  a.btn.ghost { background: transparent; color: var(--ink); border: 1px solid #C9C2B6; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .bar i { animation: none; width: 100%; } }
+</style>
+</head>
+<body>
+<main class="card" aria-live="polite">
+  <p class="logo"><span>R</span>enzi</p>
+  <h1 id="t">…</h1>
+  <p id="x"></p>
+  <div class="bar" id="bar"><i></i></div>
+  <div class="row" id="acts" hidden><a class="btn" id="box" href="#"></a><a class="btn ghost" id="back" href="https://claude.ai/artifact/9jv6PFcam98p1AH8DCRpFG"></a></div>
+</main>
+<script>
+  // the Renzi Gmail script (Web app, runs as renzi.contact.1@gmail.com)
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyLb8HWy2GeTNZnVhQ7R97muDbwjFpsqk9dawYl3FW0LV1aNEufO4l-PYRuO7bFI0KC3Q/exec';
+  var T = {
+    fr: { busy: 'Envoi de votre lien…', ok: 'C’est envoyé', okT: 'Votre lien d’accès part vers {x}. On vous ouvre votre boîte mail.', okN: 'Votre lien d’accès part vers {x}. Ouvrez votre boîte de réception (pensez aussi à Promotions et Spam).', already: 'Déjà envoyé', alreadyT: 'Un e-mail vient déjà de partir vers {x}.', err: 'L’envoi n’a pas abouti', errT: 'Réessayez dans quelques minutes.', none: 'Lien incomplet', noneT: 'Revenez sur la page Renzi et remplissez le formulaire d’essai.', open: 'Ouvrir {x}', back: 'Revenir à Renzi' },
+    en: { busy: 'Sending your link…', ok: 'Sent', okT: 'Your access link is on its way to {x}. Opening your mailbox.', okN: 'Your access link is on its way to {x}. Open your inbox (check Promotions and Spam too).', already: 'Already sent', alreadyT: 'An e-mail has just been sent to {x}.', err: 'Sending failed', errT: 'Try again in a few minutes.', none: 'Incomplete link', noneT: 'Go back to the Renzi page and fill in the trial form.', open: 'Open {x}', back: 'Back to Renzi' },
+    ar: { busy: 'جارٍ إرسال الرابط…', ok: 'تم الإرسال', okT: 'رابط الدخول في طريقه إلى {x}. نفتح لك بريدك الآن.', okN: 'رابط الدخول في طريقه إلى {x}. افتح بريدك الوارد (وتحقق أيضًا من العروض والرسائل غير المرغوب فيها).', already: 'أُرسل من قبل', alreadyT: 'أُرسل بريد للتو إلى {x}.', err: 'تعذّر الإرسال', errT: 'أعد المحاولة بعد بضع دقائق.', none: 'رابط غير مكتمل', noneT: 'عد إلى صفحة Renzi واملأ نموذج التجربة.', open: 'افتح {x}', back: 'العودة إلى Renzi' }
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  // the visitor's own mailbox, from the domain of their address (unknown domains: no link, just the words)
+  function inbox(email) {
+    var d = (email.split('@')[1] || '').toLowerCase();
+    if (/^(gmail|googlemail)\.com$/.test(d)) return { name: 'Gmail', url: 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(email) };
+    if (/^(outlook|hotmail|live|msn)\.[a-z.]+$/.test(d)) return { name: 'Outlook', url: 'https://outlook.live.com/mail/' };
+    if (/^(yahoo|ymail)\.[a-z.]+$/.test(d)) return { name: 'Yahoo Mail', url: 'https://mail.yahoo.com/' };
+    if (/^(icloud|me|mac)\.com$/.test(d)) return { name: 'iCloud Mail', url: 'https://www.icloud.com/mail' };
+    return null;
+  }
+  function say(w, title, text, email) {
+    $('t').textContent = w[title];
+    var parts = w[text].split('{x}');
+    $('x').textContent = parts[0];
+    if (parts.length > 1) { var b = document.createElement('b'); b.textContent = email; $('x').appendChild(b); $('x').appendChild(document.createTextNode(parts[1])); }
+  }
+  function decode(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+  var d = null;
+  try { d = decode(location.hash.replace(/^#/, '')); } catch (e) { d = null; }
+  var lang = d && ['fr', 'en', 'ar'].indexOf(d.l) >= 0 ? d.l : 'fr', w = T[lang];
+  document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  if (lang === 'ar') document.body.classList.add('ar');
+  $('back').textContent = w.back;
+  // the request leaves the address bar at once (it holds the visitor's name and e-mail)
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  function done(title, text, box) {
+    $('bar').hidden = true; $('acts').hidden = false;
+    if (box) { $('box').href = box.url; $('box').textContent = w.open.replace('{x}', box.name); } else { $('box').hidden = true; }
+  }
+  if (!d || !d.e) { say(w, 'none', 'noneT', ''); done(); }
+  else {
+    say(w, 'busy', 'busy', '');
+    $('x').textContent = '';
+    var box = inbox(d.e);
+    fetch(ENDPOINT, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ n: d.n, e: d.e, p: d.p, r: d.r, l: lang, x: d.x }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r || !r.ok) throw new Error('send');
+        if (r.already) { say(w, 'already', 'alreadyT', d.e); done(0, 0, box); return; }
+        say(w, 'ok', box ? 'okT' : 'okN', d.e); done(0, 0, box);
+        // straight into their mailbox, where the e-mail is waiting
+        if (box) setTimeout(function () { location.replace(box.url); }, 1600);
+      })
+      .catch(function () { say(w, 'err', 'errT', ''); done(); });
+  }
+</script>
+</body>
+</html>
